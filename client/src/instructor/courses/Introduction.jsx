@@ -1,9 +1,11 @@
 import { categories, courses, languages, levels } from "@/assets/data";
-import React, { useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { FaUpload } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
 
-const Introduction = () => {
+const Introduction = ({ setCourseID, handleActiveTab, singleCourse }) => {
   const [courseData, setCourseData] = useState({
     title: "",
     category: "",
@@ -13,7 +15,9 @@ const Introduction = () => {
     description: "",
     pricing: "",
   });
+
   const [banner, setBanner] = useState("");
+  const [bannerProgress, setBannerProgress] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,46 +27,143 @@ const Introduction = () => {
     }));
   };
 
-  //   handlebannerupload
-  const handlebannerupload = (e) => {
+  //handle banner upload
+  const handleBannerUpload = async (e) => {
     const file = e.target.files[0];
 
     if (file) {
-      const reader = new FileReader();
+      const formData = new FormData();
 
-      reader.onloadend = () => {
-        setBanner(reader.result);
-      };
-      reader.readAsDataURL(file);
+      formData.append("file", file);
+
+      setBannerProgress(true);
+      try {
+        const res = await fetch("/api/course/upload", {
+          method: "POST",
+
+          body: formData,
+        });
+
+        let dataFromResponse = await res.json();
+        if (res.ok) {
+          setBanner(dataFromResponse?.result?.url);
+          setBannerProgress(false);
+        } else {
+          setBannerProgress(false);
+          toast.error(dataFromResponse.msg || "Something went wrong");
+        }
+      } catch (err) {
+        console.log(err);
+      }
     }
   };
 
+  //creaete-course
+  const { mutate, isLoading } = useMutation({
+    mutationFn: async () => {
+      try {
+        const res = await fetch("/api/course/create-course", {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({ ...courseData, banner }),
+        });
+
+        const dataFromResponse = await res.json();
+        if (res.ok) {
+          setCourseID(dataFromResponse?.courseId); // Update courseID
+          handleActiveTab("curriculum");
+          toast.success("Course created successfully!");
+        } else {
+          toast.error(dataFromResponse.msg || "Something went wrong");
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    },
+  });
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Course Data:", courseData);
-    // Add logic to handle form submission
+
+    if (!banner) {
+      toast.error("add course banner");
+      return;
+    }
+
+    mutate({ courseData, banner });
   };
+
+  //update course
+  const { mutate: updateCourse, isLoading: updateLoading } = useMutation({
+    mutationFn: async ({}) => {
+      try {
+        const res = await fetch(
+          `/api/course/update-course/${singleCourse?._id}`,
+          {
+            method: "PUT",
+
+            headers: {
+              "Content-Type": "application/json",
+            },
+
+            body: JSON.stringify({ ...courseData, banner }),
+          }
+        );
+
+        const dataFromResponse = await res.json();
+
+        if (res.ok) {
+          setCourseID(dataFromResponse?.courseId); // Update courseID
+          handleActiveTab("curriculum");
+          toast.success("Course updated successfully!");
+        } else {
+          toast.error("something went wrong");
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    },
+  });
+
+  // Submit updated data
+  const handleUpdate = (e) => {
+    e.preventDefault();
+    updateCourse({});
+  };
+
+  useEffect(() => {
+    //if is Updating...
+    if (singleCourse) {
+      setCourseData(singleCourse);
+      setBanner(singleCourse?.banner);
+    }
+  }, [singleCourse?._id]);
 
   return (
     <div className="sm:w-[100%] mt-7 p-6 bg-white shadow-md rounded-md">
       <h2 className="text-2xl font-semibold text-center mb-6">
-        Create New Course
+        {singleCourse ? "Updating Course..." : "Create New Course"}
       </h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+
+      <form className="space-y-4">
         {/* Course Title */}
 
         <div className="flex flex-col">
           <label htmlFor="image">
             <div className="flex  rounded-md text-white items-center justify-center  gap-3 bg-blue-600 p-2 cursor-pointer  hover:bg-blue-500 duration-500">
               <FaUpload />
-              Uplaod Course Banner
+              {bannerProgress ? "Uploading..." : "Uplaod Course Banner"}
             </div>
             <input
               type="file"
               id="image"
               accept="image/*"
               hidden
-              onChange={handlebannerupload}
+              onChange={handleBannerUpload}
             />
           </label>
         </div>
@@ -70,10 +171,10 @@ const Introduction = () => {
         <div>
           {banner && (
             <div className=" relative">
-              <img src={banner} />
+              <img src={banner} className="border -mt-[20px]" />
               <RxCross2
                 size={20}
-                onClick={() => setBanner('')}
+                onClick={() => setBanner("")}
                 className="hover:text-red-500 duration-500  cursor-pointer absolute right-2 top-2"
               />
             </div>
@@ -241,12 +342,23 @@ const Introduction = () => {
 
         {/* Submit Button */}
         <div className="text-center">
-          <button
-            type="submit"
-            className="px-6 py-2  mt-4 mb-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
-          >
-            Create Course
-          </button>
+          {singleCourse ? (
+            <button
+              type="submit"
+              onClick={handleUpdate}
+              className="px-6 py-2  mt-4 mb-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
+            >
+              {updateLoading ? "Updating ..." : "Update Course"}
+            </button>
+          ) : (
+            <button
+              type="submit"
+              onClick={handleSubmit}
+              className="px-6 py-2  mt-4 mb-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
+            >
+              {isLoading ? "Creating ..." : "Create Course"}
+            </button>
+          )}
         </div>
       </form>
     </div>

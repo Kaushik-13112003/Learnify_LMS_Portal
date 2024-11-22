@@ -1,0 +1,89 @@
+const mongoose = require("mongoose");
+
+const lectureSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    require: true,
+  },
+
+  videoUrl: {
+    type: String,
+    require: true,
+  },
+
+  publicId: {
+    type: String,
+    require: true,
+  },
+
+  freePreview: {
+    type: Boolean,
+    require: true,
+  },
+});
+
+const courseSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      require: true,
+    },
+
+    category: {
+      type: String,
+      require: true,
+    },
+
+    level: {
+      type: String,
+      require: true,
+    },
+
+    banner: {
+      type: String,
+      require: true,
+    },
+
+    language: {
+      type: String,
+      require: true,
+    },
+
+    subtitle: {
+      type: String,
+      require: true,
+    },
+
+    description: {
+      type: String,
+      require: true,
+    },
+
+    pricing: {
+      type: String,
+      require: true,
+    },
+
+    courseCreater: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+    },
+
+    students: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user",
+      },
+    ],
+
+    curriculum: [lectureSchema],
+
+    isPublished: {
+      type: Boolean,
+    },
+  },
+  { timestamps: true }
+);
+
+const courseModel = mongoose.model("course", courseSchema);
+module.exports = courseModel;

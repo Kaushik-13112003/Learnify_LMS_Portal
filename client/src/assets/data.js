@@ -59,8 +59,11 @@ export const courses = [
 export const courseCurriculumInitialFormData = [
   {
     title: "",
-    videoUrl: "",
     freePreview: false,
+    videoUrl: "",
     publicId: "",
+    progress: false,
+    deleteProgress: false,
+    replaceProgress: false,
   },
 ];

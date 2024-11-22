@@ -50,9 +50,9 @@ const App = () => {
     window.scrollTo(0, 0);
   }, [navigate]);
 
-  // if (isLoading) {
-  //   return <div className="text-center mt-7">Loading...</div>;
-  // }
+  if (isLoading) {
+    return <div className="text-center mt-7">Loading...</div>;
+  }
 
   return (
     <>
@@ -128,6 +128,13 @@ const App = () => {
 
         <Route
           path="/create-course"
+          element={
+            authenticatedUser ? <CreateCourse /> : <Navigate to="/auth" />
+          }
+        ></Route>
+
+        <Route
+          path="/update-course/:id"
           element={
             authenticatedUser ? <CreateCourse /> : <Navigate to="/auth" />
           }

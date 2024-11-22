@@ -3,17 +3,55 @@ import React, { useState } from "react";
 import Introduction from "./courses/Introduction";
 import Curriculum from "./courses/Curriculum";
 import Settings from "./courses/Settings";
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
 const CreateCourse = () => {
+  const { id } = useParams();
   const [activeTab, setActiveTab] = useState("course-introduction");
+  const [courseID, setCourseID] = useState("");
+  const [singleCourse, setSingleCourse] = useState("");
 
   const handleActiveTab = (value) => {
     setActiveTab(value);
   };
 
+  if (id) {
+    // Fetching authenticated user
+
+    const { data: singleCourse, isLoading } = useQuery({
+      queryKey: ["singleCourse"],
+
+      queryFn: async () => {
+        try {
+          const res = await fetch(`/api/course/single-course/${id}`, {
+            method: "GET",
+          });
+
+          if (!res.ok) {
+            return null;
+          } else {
+            const dataFromResponse = await res.json();
+            setSingleCourse(dataFromResponse?.singleCourse);
+            return dataFromResponse?.singleCourse;
+          }
+        } catch (err) {
+          console.log(err);
+        }
+      },
+    });
+
+    if (isLoading) {
+      return <div className="text-center mt-7">Loading...</div>;
+    }
+  }
+
   return (
     <>
-      <div className="mt-[100px] mb-[100px] flex items-center justify-center ">
+      <p className="text-red-600 text-center mt-6">
+        do not refresh page or change page while creating course
+      </p>
+      <div className="mt-[30px] mb-[100px] flex items-center justify-center ">
         <div className=" w-[90vw] rounded-lg">
           <Tabs
             value={activeTab}
@@ -24,10 +62,11 @@ const CreateCourse = () => {
               <TabsTrigger
                 value="course-introduction"
                 className={`py-2 w-[100%] px-4 font-medium rounded ${
-                  activeTab === "signin"
+                  activeTab === "course-introduction"
                     ? "bg-blue-500 text-white"
                     : "text-blue-500"
                 }`}
+                disabled={courseID}
               >
                 Course Introduction
               </TabsTrigger>
@@ -38,32 +77,25 @@ const CreateCourse = () => {
                     ? "bg-blue-500 text-white"
                     : "text-blue-500"
                 }`}
+                disabled={!courseID}
               >
-                Curriculum
-              </TabsTrigger>
-
-              <TabsTrigger
-                value="settings"
-                className={`py-2 w-[100%]  px-4 font-medium rounded ${
-                  activeTab === "settings"
-                    ? "bg-blue-500 text-white"
-                    : "text-blue-500"
-                }`}
-              >
-                Settings
+                Course Curriculum
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="course-introduction">
-              <Introduction />
+              <Introduction
+                singleCourse={id && singleCourse ? singleCourse : ""}
+                setCourseID={setCourseID}
+                handleActiveTab={handleActiveTab}
+              />
             </TabsContent>
 
             <TabsContent value="curriculum">
-              <Curriculum />
-            </TabsContent>
-
-            <TabsContent value="settings">
-              <Settings />
+              <Curriculum
+                courseID={courseID}
+                singleCourse={id && singleCourse ? singleCourse : ""}
+              />
             </TabsContent>
           </Tabs>
         </div>

@@ -1,32 +1,46 @@
 import React from "react";
+import useInstructorCourses from "./courses/useInstructorCourses";
+import { FaEdit } from "react-icons/fa";
+import { CiCircleRemove } from "react-icons/ci";
+import { TiTick } from "react-icons/ti";
+import { NavLink } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 const Dashboard = () => {
-  // Temporary data
-  const dashboardData = {
-    totalCourses: 8,
-    totalEarnings: 2500,
-    totalStudentsEnrolled: 120,
-    studentList: [
-      {
-        courseName: "JavaScript Essentials",
-        studentName: "Alice Johnson",
-        email: "alice@example.com",
-        amount: 50,
-        purchaseDate: "2024-11-10T14:00:00Z",
-      },
-      {
-        courseName: "React for Beginners",
-        studentName: "Bob Smith",
-        email: "bob@example.com",
-        amount: 75,
-        purchaseDate: "2024-11-09T10:30:00Z",
-      },
-      // Add more students as needed
-    ],
-  };
+  const instructorAllCourses = useInstructorCourses();
+  const queryClient = useQueryClient();
 
-  const { totalCourses, totalEarnings, totalStudentsEnrolled, studentList } =
-    dashboardData;
+  //update course
+  const { mutate: unpublishCourse } = useMutation({
+    mutationFn: async ({ id }) => {
+      try {
+        const res = await fetch(`/api/course/unpublish-course/${id}`, {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        const dataFromResponse = await res.json();
+
+        if (res.ok) {
+          toast.success(dataFromResponse?.msg);
+          queryClient.invalidateQueries({ queryKey: ["instructorAllCourses"] });
+        } else {
+          toast.error("something went wrong");
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    },
+  });
+
+  // Submit updated data
+  const handleCourseUnpublish = (id) => {
+    unpublishCourse({ id });
+  };
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -41,7 +55,7 @@ const Dashboard = () => {
             Total Courses Created
           </h2>
           <p className="text-2xl font-bold text-blue-900 mt-2">
-            {totalCourses}
+            {instructorAllCourses?.length}
           </p>
         </div>
         <div className="p-6 bg-purple-100 rounded-lg text-center shadow-md">
@@ -49,19 +63,27 @@ const Dashboard = () => {
             Students Enrolled
           </h2>
           <p className="text-2xl font-bold text-purple-900 mt-2">
-            {totalStudentsEnrolled}
+            {/* {instructorAllCourses?.reduce((acc, course) => {
+              return acc + course?.students?.length;
+            }, 0)}{" "} */}
           </p>
         </div>
         <div className="p-6 bg-green-100 rounded-lg text-center shadow-md">
           <h2 className="text-xl font-medium text-green-800">Total Earnings</h2>
           <p className="text-2xl font-bold text-green-900 mt-2">
-            ${totalEarnings.toFixed(2)}
+            $
+            {/* {instructorAllCourses &&
+              instructorAllCourses?.reduce((acc, course) => {
+                return acc + course?.students?.length * course?.pricing;
+              }, 0)}{" "} */}
           </p>
         </div>
       </div>
 
       {/* Student List Table */}
-      <h2 className="text-2xl mt-[50px] font-semibold text-center mb-4">Student List</h2>
+      <h2 className="text-2xl mt-[50px] font-semibold text-center mb-4">
+        Student List
+      </h2>
       <div className="overflow-x-auto mt-8 mb-10">
         <table className="min-w-full bg-white border border-gray-200">
           <thead>
@@ -70,35 +92,58 @@ const Dashboard = () => {
                 Course Name
               </th>
               <th className="py-2 px-4 border-b text-gray-600 font-medium">
-                Student Name
+                Students
               </th>
               <th className="py-2 px-4 border-b text-gray-600 font-medium">
-                Email
+                Revenue
               </th>
+
               <th className="py-2 px-4 border-b text-gray-600 font-medium">
-                Amount
+                Created At
               </th>
+
               <th className="py-2 px-4 border-b text-gray-600 font-medium">
-                Date & Time
+                Actions
               </th>
             </tr>
           </thead>
           <tbody>
-            {studentList.length > 0 ? (
-              studentList.map((student, index) => (
+            {instructorAllCourses?.length > 0 ? (
+              instructorAllCourses?.map((course, index) => (
                 <tr key={index} className="border-b hover:bg-gray-50">
+                  <td className="py-2 px-4 text-center">{course?.title}</td>
                   <td className="py-2 px-4 text-center">
-                    {student.courseName}
+                    {course?.students?.length}
                   </td>
                   <td className="py-2 px-4 text-center">
-                    {student.studentName}
+                    ${course?.students?.length * course?.pricing}
                   </td>
-                  <td className="py-2 px-4 text-center">{student.email}</td>
+
                   <td className="py-2 px-4 text-center">
-                    ${student.amount.toFixed(2)}
+                    {new Date(course?.createdAt).toLocaleString()}
                   </td>
-                  <td className="py-2 px-4 text-center">
-                    {new Date(student.purchaseDate).toLocaleString()}
+
+                  <td className="py-2 px-4 text-center flex gap-4 items-center justify-center">
+                    <NavLink to={`/update-course/${course?._id}`}>
+                      <FaEdit
+                        size={20}
+                        className="hover:cursor-pointer duration-500 hover:text-green-700"
+                      />
+                    </NavLink>
+
+                    {course?.isPublished ? (
+                      <TiTick
+                        size={20}
+                        className="hover:cursor-pointer duration-500 hover:text-green-500 text-green-700"
+                        onClick={() => handleCourseUnpublish(course?._id)}
+                      />
+                    ) : (
+                      <CiCircleRemove
+                        size={20}
+                        className="hover:cursor-pointer duration-500 hover:text-red-700"
+                        onClick={() => handleCourseUnpublish(course?._id)}
+                      />
+                    )}
                   </td>
                 </tr>
               ))

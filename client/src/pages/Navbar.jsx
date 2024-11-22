@@ -52,7 +52,10 @@ const Navbar = () => {
   return (
     <header className="bg-white w-full border-b shadow">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-        <NavLink to="/" className="text-2xl font-bold text-blue-600">
+        <NavLink
+          to="/"
+          className="text-2xl font-bold text-blue-600 hover:text-blue-500 duration-300"
+        >
           Learnify
         </NavLink>
 
