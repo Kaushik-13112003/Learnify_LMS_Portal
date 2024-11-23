@@ -1,19 +1,65 @@
+import useCourseUnpublish from "@/instructor/courses/useCourseUnpublish";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowBigRight } from "lucide-react";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { CiCircleRemove } from "react-icons/ci";
+import { FaEdit } from "react-icons/fa";
+import { TiTick } from "react-icons/ti";
 import { NavLink } from "react-router-dom";
 
 const CourseDisplay = ({ courses, type }) => {
+  const [allCourses, setAllCourses] = useState([]);
+  const { data: authenticatedUser } = useQuery({ queryKey: ["authUser"] });
+
+  const handleCourseUnpublish = useCourseUnpublish();
+
+  const handleSortByPrice = (e) => {
+    const value = e.target.value;
+
+    let sortedCoursesByPrice = [...allCourses];
+
+    if (value === "Price : Low to High") {
+      sortedCoursesByPrice.sort((a, b) => a.pricing - b.pricing);
+    } else if (value === "Price : High to Low") {
+      sortedCoursesByPrice.sort((a, b) => b.pricing - a.pricing);
+    } else if (value === "Created At: Newest First") {
+      sortedCoursesByPrice.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+    } else if (value === "Created At: Oldest First") {
+      sortedCoursesByPrice.sort(
+        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+      );
+    }
+
+    setAllCourses(sortedCoursesByPrice);
+  };
+
+  useEffect(() => {
+    setAllCourses(courses);
+  }, [courses]);
+
   return (
     <>
       {type !== "instructor" && (
-        <select
-          name="sort"
-          className="p-2  ml-4 cursor-pointer bg-white shadow-md "
-        >
-          <option value="">Sort By - </option>
-          <option value="Price : Low to High">Price : Low to High</option>
-          <option value="Price : High to Low">Price : High to Low</option>
-        </select>
+        <div className="flex gap-3 items-center">
+          <select
+            name="sort"
+            onChange={handleSortByPrice}
+            className="p-2  ml-4 cursor-pointer bg-white shadow-md "
+          >
+            <option value="">Sort By - </option>
+            <option value="Price : Low to High">Price : Low to High</option>
+            <option value="Price : High to Low">Price : High to Low</option>
+            <option value="Created At: Newest First">
+              Created At: Newest First
+            </option>
+            <option value="Created At: Oldest First">
+              Created At: Oldest First
+            </option>
+          </select>
+          <p>{courses?.length} results</p>
+        </div>
       )}
 
       <div className="container mx-auto px-4 py-8">
@@ -21,14 +67,28 @@ const CourseDisplay = ({ courses, type }) => {
           {type === "instructor" ? "Created Courses" : "Available Courses"}
         </h1>
 
-        {courses?.reduce((acc, c, idx) => {
+        {allCourses?.reduce((acc, c, idx) => {
           return c.isPublished === true ? acc + 1 : acc + 0;
-        }, 0) === 0 && <p>no course found...</p>}
+        }, 0) === 0 && (
+          <div className="h-screen flex flex-col gap-4  ">
+            <p className="text-red-600">no courses found...</p>
+            {type === "instructor" && (
+              <NavLink
+                to={"/create-course"}
+                className={
+                  "bg-blue-700 text-white rounded-md p-2 hover:bg-blue-600 duration-500 cursor-pointer sm:w-[130px] text-center w-[100%]"
+                }
+              >
+                Create Course
+              </NavLink>
+            )}
+          </div>
+        )}
 
-        {courses?.map(
+        {allCourses?.map(
           (course, index) =>
             course?.isPublished && (
-              <div className="flex sm:flex-row flex-col gap-4 sm:items-center bg-white shadow-md rounded-lg p-4 mb-6">
+              <div className="flex sm:flex-row flex-col gap-4 sm:items-center bg-white shadow-md rounded-lg p-4 mb-6 relative">
                 {/* Image on the left */}
                 <div className="flex flex-col gap-2 sm:items-center">
                   <img
@@ -65,6 +125,33 @@ const CourseDisplay = ({ courses, type }) => {
                       {course.level}
                     </span>
                   </div>
+                </div>
+
+                <div className=" absolute right-4 top-4 flex gap-4 items-center">
+                  {course?.courseCreater === authenticatedUser?._id && (
+                    <>
+                      <NavLink to={`/update-course/${course?._id}`}>
+                        <FaEdit
+                          size={20}
+                          className="hover:cursor-pointer duration-500 hover:text-green-700"
+                        />
+                      </NavLink>
+
+                      {course?.isPublished ? (
+                        <TiTick
+                          size={20}
+                          className="hover:cursor-pointer duration-500 hover:text-green-500 text-green-700"
+                          onClick={() => handleCourseUnpublish(course?._id)}
+                        />
+                      ) : (
+                        <CiCircleRemove
+                          size={20}
+                          className="hover:cursor-pointer duration-500 hover:text-red-700"
+                          onClick={() => handleCourseUnpublish(course?._id)}
+                        />
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             )

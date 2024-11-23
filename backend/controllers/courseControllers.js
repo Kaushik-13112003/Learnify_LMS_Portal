@@ -31,6 +31,20 @@ const deleteMediaToCloudinary = async (req, res) => {
   }
 };
 
+const bulkUploadController = async (req, res) => {
+  try {
+    const uploadPromises = req.files.map((fileItem) =>
+      v2.uploader.upload(fileItem.path, { resource_type: "auto" })
+    );
+
+    const results = await Promise.all(uploadPromises);
+
+    return res.status(200).json({ msg: "Videos Uploaded", results: results });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 const createCourseController = async (req, res) => {
   try {
     const { title, category, level, language, subtitle, description, pricing } =
@@ -277,4 +291,5 @@ module.exports = {
   addLecturesToCourseController,
   cancelCourseController,
   unpublishCourseController,
+  bulkUploadController,
 };

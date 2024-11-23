@@ -62,8 +62,5 @@ export const courseCurriculumInitialFormData = [
     freePreview: false,
     videoUrl: "",
     publicId: "",
-    progress: false,
-    deleteProgress: false,
-    replaceProgress: false,
   },
 ];

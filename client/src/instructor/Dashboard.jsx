@@ -4,43 +4,12 @@ import { FaEdit } from "react-icons/fa";
 import { CiCircleRemove } from "react-icons/ci";
 import { TiTick } from "react-icons/ti";
 import { NavLink } from "react-router-dom";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
+import useCourseUnpublish from "./courses/useCourseUnpublish";
 
 const Dashboard = () => {
   const instructorAllCourses = useInstructorCourses();
-  const queryClient = useQueryClient();
 
-  //update course
-  const { mutate: unpublishCourse } = useMutation({
-    mutationFn: async ({ id }) => {
-      try {
-        const res = await fetch(`/api/course/unpublish-course/${id}`, {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        const dataFromResponse = await res.json();
-
-        if (res.ok) {
-          toast.success(dataFromResponse?.msg);
-          queryClient.invalidateQueries({ queryKey: ["instructorAllCourses"] });
-        } else {
-          toast.error("something went wrong");
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    },
-  });
-
-  // Submit updated data
-  const handleCourseUnpublish = (id) => {
-    unpublishCourse({ id });
-  };
+  const handleCourseUnpublish = useCourseUnpublish();
 
   return (
     <div className="container mx-auto px-4 py-6">

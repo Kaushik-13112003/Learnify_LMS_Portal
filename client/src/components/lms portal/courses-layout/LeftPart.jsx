@@ -1,14 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { categories, languages, levels } from "@/assets/data";
 import { useParams } from "react-router-dom";
 import { FcClearFilters } from "react-icons/fc";
 
-const LeftPart = () => {
+const LeftPart = ({
+  selectedCategories,
+  setSelectedCategories,
+  selectedLanguages,
+  setSelectedLanguages,
+  selectedLevels,
+  setSelectedLevels,
+}) => {
   const { category } = useParams();
-
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [selectedLanguages, setSelectedLanguages] = useState([]);
-  const [selectedLevels, setSelectedLevels] = useState([]);
 
   //category selection
   const handleCategoryCheckboxChange = (category) => {
@@ -35,6 +38,30 @@ const LeftPart = () => {
         ? prevSelected.filter((item) => item !== level)
         : [...prevSelected, level]
     );
+  };
+
+  const handleFilter = async () => {
+    try {
+      const res = await fetch(`/api/student/filter-courses`, {
+        method: "GET",
+
+        body: JSON.stringify({
+          categories: selectedCategories,
+          levels: selectedLevels,
+          languages: selectedLanguages,
+        }),
+      });
+
+      const dataFromResponse = await res.json();
+
+      if (res.ok) {
+        console.log(dataFromResponse?.allCourses);
+      } else {
+        console.log("Something went Wrong");
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   useEffect(() => {
@@ -66,13 +93,15 @@ const LeftPart = () => {
 
       <h3 className="text-lg font-semibold mb-4">Filter by Category</h3>
       <div className="flex flex-col gap-2">
-        {categories.map((category) => (
+        {categories?.map((category) => (
           <label key={category.slug} className="flex items-center space-x-2">
             <input
               type="checkbox"
               value={category.name}
-              checked={selectedCategories.includes(category.slug)}
-              onChange={() => handleCategoryCheckboxChange(category.slug)}
+              checked={selectedCategories?.includes(category.slug)}
+              onChange={() => {
+                handleCategoryCheckboxChange(category.slug), handleFilter;
+              }}
               className="form-checkbox h-5 w-5 text-blue-600"
             />
             <span className="text-gray-800">{category.name}</span>
@@ -83,12 +112,12 @@ const LeftPart = () => {
       {/* language */}
       <h3 className="text-lg font-semibold mb-4 mt-7">Filter by Language</h3>
       <div className="flex flex-col gap-2">
-        {languages.map((language) => (
+        {languages?.map((language) => (
           <label key={language} className="flex items-center space-x-2">
             <input
               type="checkbox"
               value={language}
-              checked={selectedLanguages.includes(language)}
+              checked={selectedLanguages?.includes(language)}
               onChange={() => handleLanguageCheckboxChange(language)}
               className="form-checkbox h-5 w-5 text-blue-600"
             />
@@ -100,12 +129,12 @@ const LeftPart = () => {
       {/* level */}
       <h3 className="text-lg font-semibold mb-4 mt-7">Filter by Levels</h3>
       <div className="flex flex-col gap-2">
-        {levels.map((level) => (
+        {levels?.map((level) => (
           <label key={level} className="flex items-center space-x-2">
             <input
               type="checkbox"
               value={level}
-              checked={selectedLevels.includes(level)}
+              checked={selectedLevels?.includes(level)}
               onChange={() => handleLevelCheckboxChange(level)}
               className="form-checkbox h-5 w-5 text-blue-600"
             />

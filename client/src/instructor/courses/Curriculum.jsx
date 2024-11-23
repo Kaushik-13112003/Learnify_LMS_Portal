@@ -1,7 +1,7 @@
 import { courseCurriculumInitialFormData } from "@/assets/data";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { RxCross2 } from "react-icons/rx";
 import VideoLectureDisplay from "./VideoLectureDisplay";
@@ -10,6 +10,8 @@ import { useNavigate } from "react-router-dom";
 
 const Curriculum = ({ courseID, singleCourse }) => {
   const navigate = useNavigate();
+  const bulkUploadRefrence = useRef("");
+
   const [courseCurriculumFormData, setCourseCurriculumFormData] = useState(
     courseCurriculumInitialFormData.map((item) => ({
       ...item,
@@ -18,6 +20,7 @@ const Curriculum = ({ courseID, singleCourse }) => {
       replaceProgress: false,
     }))
   );
+  const [bulkProgress, setBulkProgress] = useState(false);
 
   //add course
   const handleAddLecture = () => {
@@ -209,8 +212,6 @@ const Curriculum = ({ courseID, singleCourse }) => {
     });
   };
 
-  console.log(courseCurriculumFormData);
-
   const isEmpty = (value) => {
     if (Array.isArray(value)) {
       return value.length === 0;
@@ -314,6 +315,72 @@ const Curriculum = ({ courseID, singleCourse }) => {
     cancelCourseCreationProcess({});
   };
 
+  // handleBulkUpload
+  const handleBulkUploadDialogBox = () => {
+    bulkUploadRefrence.current?.click();
+  };
+
+  // handleBulkUpload
+  const handleBulkUpload = async (e) => {
+    const allSelectedFiles = Array.from(e.target.files);
+
+    const formData = new FormData();
+
+    allSelectedFiles.forEach((fileItem) => formData.append("files", fileItem));
+
+    setBulkProgress(true);
+    try {
+      const res = await fetch("/api/course/bulk-upload", {
+        method: "POST",
+
+        body: formData,
+      });
+
+      let dataFromResponse = await res.json();
+      console.log(dataFromResponse);
+
+      if (res.ok) {
+        toast.success("all videos are uploaded");
+
+        const newLectures = dataFromResponse?.results?.map((video) => ({
+          title: "",
+          publicId: video.public_id,
+          videoUrl: video?.url,
+          freePreview: false,
+          progress: false, // Reset progress state
+          deleteProgress: false,
+          replaceProgress: false,
+        }));
+
+        setCourseCurriculumFormData((prevVideos) => {
+          const isDefaultState = prevVideos.every(
+            (video) =>
+              video.title === "" &&
+              video.videoUrl === "" &&
+              video.publicId === "" &&
+              video.freePreview === false
+          );
+
+          if (isDefaultState) {
+            return newLectures;
+          } else {
+            // Otherwise, append the new videos to the existing valid ones
+            return [...prevVideos, ...newLectures];
+          }
+        });
+
+        setBulkProgress(false);
+      } else {
+        setBulkProgress(false);
+        toast.error(dataFromResponse.msg || "Something went wrong");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  console.log(courseCurriculumFormData);
+
   //update course
   const { mutate: updateCourse, isLoading: updateLoading } = useMutation({
     mutationFn: async ({}) => {
@@ -372,7 +439,23 @@ const Curriculum = ({ courseID, singleCourse }) => {
           </h2>
 
           <div className="flex gap-4 items-center sm:flex-row flex-col sm:w-auto w-[100%]">
-            <Button className={"sm:w-[100px] w-[100%]"}>Bulk Upload</Button>
+            <Button
+              className={"sm:w-[100px] w-[100%]"}
+              as="label"
+              htmlFor="bulk-upload"
+              onClick={handleBulkUploadDialogBox}
+            >
+              {bulkProgress ? "Uploading..." : "Bulk Upload"}
+            </Button>
+            <input
+              type="file"
+              ref={bulkUploadRefrence}
+              accept="video/*"
+              multiple
+              id="bulk-upload"
+              onChange={handleBulkUpload}
+              hidden
+            />
             <Button
               onClick={handleCourseCancel}
               className={

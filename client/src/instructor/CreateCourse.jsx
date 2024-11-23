@@ -48,7 +48,7 @@ const CreateCourse = () => {
 
   return (
     <>
-      <p className="text-red-600 text-center mt-6">
+      <p className="text-red-600 text-center m-4">
         do not refresh page or change page while creating course
       </p>
       <div className="mt-[30px] mb-[100px] flex items-center justify-center ">
@@ -77,7 +77,7 @@ const CreateCourse = () => {
                     ? "bg-blue-500 text-white"
                     : "text-blue-500"
                 }`}
-                disabled={!courseID}
+                disabled={courseID}
               >
                 Course Curriculum
               </TabsTrigger>

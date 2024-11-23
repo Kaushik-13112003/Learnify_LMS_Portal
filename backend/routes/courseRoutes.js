@@ -11,6 +11,7 @@ const {
   addLecturesToCourseController,
   cancelCourseController,
   unpublishCourseController,
+  bulkUploadController,
 } = require("../controllers/courseControllers");
 const router = express.Router();
 const protectedRoute = require("../middleware/protectedRoute");
@@ -54,5 +55,8 @@ router.delete(
 
 //unpublish-course
 router.post("/unpublish-course/:id", protectedRoute, unpublishCourseController);
+
+//bulk-upload
+router.post("/bulk-upload", upload.array("files", 5), bulkUploadController);
 
 module.exports = router;
