@@ -71,8 +71,10 @@ const courseSchema = new mongoose.Schema(
 
     students: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "user",
+        studentId: String,
+        studentName: String,
+        studentEmail: String,
+        paidAmount: Number,
       },
     ],
 

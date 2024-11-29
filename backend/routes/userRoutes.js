@@ -4,6 +4,7 @@ const {
   updateProfileController,
   forgotPasswordController,
   resetPasswordController,
+  getMyCoursesController,
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -16,5 +17,8 @@ router.post("/forgot-password", protectedRoute, forgotPasswordController);
 
 //reset-password
 router.post("/reset-password/:token", protectedRoute, resetPasswordController);
+
+//my-courses
+router.get("/my-courses/:id", protectedRoute, getMyCoursesController);
 
 module.exports = router;

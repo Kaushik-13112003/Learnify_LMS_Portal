@@ -12,8 +12,6 @@ const SingleCourse = () => {
   const [selectedLanguages, setSelectedLanguages] = useState([]);
   const [selectedLevels, setSelectedLevels] = useState([]);
 
-  console.log(selectedCategories);
-
   const handleChange = () => {
     setIsFilterOpen((val) => !val);
   };

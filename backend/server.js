@@ -7,6 +7,13 @@ const cors = require("cors");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const { v2 } = require("cloudinary");
+const paypal = require("paypal-rest-sdk");
+
+paypal.configure({
+  mode: "sandbox",
+  client_id: process.env.PAYPAL_CLIENT_ID,
+  client_secret: process.env.PAYPAL_SECRET_ID,
+});
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -39,6 +46,7 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/user", require("./routes/userRoutes"));
 app.use("/api/course", require("./routes/courseRoutes"));
 app.use("/api/student", require("./routes/studentsRoutes"));
+app.use("/api/payment", require("./routes/paymentRoutes"));
 
 app.listen(PORT, () => {
   console.log(colors.green("Server is Running on PORT :", PORT));

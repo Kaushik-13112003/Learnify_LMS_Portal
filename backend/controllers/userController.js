@@ -3,6 +3,7 @@ const userModel = require("../models/userModel");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const { forgotPasswordMail } = require("../mailtrap/generateMail");
+const purchaseModel = require("../models/purchaseModel");
 
 const updateProfileController = async (req, res) => {
   try {
@@ -144,8 +145,34 @@ const resetPasswordController = async (req, res) => {
   }
 };
 
+const getMyCoursesController = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const findUser = await userModel.findById(id);
+
+    if (!findUser) {
+      return res.status(404).json({ msg: "user not found" });
+    }
+
+    //find current user all courses
+    const allCourses = await purchaseModel
+      .find({ purchasedBy: id })
+      .populate("course");
+
+    if (allCourses) {
+      return res.status(200).json({ allCourses: allCourses });
+    } else {
+      return res.status(404).json({ msg: "no courses found" });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 module.exports = {
   updateProfileController,
   forgotPasswordController,
   resetPasswordController,
+  getMyCoursesController,
 };

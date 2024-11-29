@@ -193,7 +193,9 @@ const getSingleCourseController = async (req, res) => {
     }
 
     //find course
-    const findCourse = await courseModel.findById(id);
+    const findCourse = await courseModel
+      .findById(id)
+      .populate("courseCreater", "-password");
     if (!findCourse) {
       return res.status(404).json({ msg: "course not found" });
     }

@@ -21,6 +21,9 @@ import ResetPassword from "./profile/ResetPassword";
 import Dashboard from "./instructor/Dashboard";
 import CreateCourse from "./instructor/CreateCourse";
 import CoursesCreated from "./instructor/CoursesCreated";
+import StudentCourses from "./students/StudentCourses";
+import PaymentReturn from "./pages/PaymentReturn";
+import PaymentCancel from "./pages/PaymentCancel";
 
 const App = () => {
   const navigate = useNavigate();
@@ -98,6 +101,27 @@ const App = () => {
         <Route
           path="/my-profile"
           element={authenticatedUser ? <Profile /> : <Navigate to="/auth" />}
+        ></Route>
+
+        <Route
+          path="/my-courses"
+          element={
+            authenticatedUser ? <StudentCourses /> : <Navigate to="/auth" />
+          }
+        ></Route>
+
+        <Route
+          path="/payment-return"
+          element={
+            authenticatedUser ? <PaymentReturn /> : <Navigate to="/auth" />
+          }
+        ></Route>
+
+        <Route
+          path="/payment-cancel"
+          element={
+            authenticatedUser ? <PaymentCancel /> : <Navigate to="/auth" />
+          }
         ></Route>
 
         <Route

@@ -71,7 +71,7 @@ const CourseDisplay = ({ courses, type }) => {
           return c.isPublished === true ? acc + 1 : acc + 0;
         }, 0) === 0 && (
           <div className="h-screen flex flex-col gap-4  ">
-            <p className="text-red-600">no courses found...</p>
+            <p className="text-red-600">no courses found</p>
             {type === "instructor" && (
               <NavLink
                 to={"/create-course"}
