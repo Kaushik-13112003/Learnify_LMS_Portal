@@ -47,6 +47,7 @@ app.use("/api/user", require("./routes/userRoutes"));
 app.use("/api/course", require("./routes/courseRoutes"));
 app.use("/api/student", require("./routes/studentsRoutes"));
 app.use("/api/payment", require("./routes/paymentRoutes"));
+app.use("/api/progress", require("./routes/progressRoutes"));
 
 app.listen(PORT, () => {
   console.log(colors.green("Server is Running on PORT :", PORT));

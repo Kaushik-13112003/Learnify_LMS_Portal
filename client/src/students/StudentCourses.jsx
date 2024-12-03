@@ -97,7 +97,10 @@ const StudentCourses = () => {
                 </div>
               </div>
 
-              <NavLink className=" absolute flex justify-center items-center gap-2 right-4 top-4 hover:text-blue-500 duration-500">
+              <NavLink
+                className=" absolute flex justify-center items-center gap-2 right-4 top-4 hover:text-blue-500 duration-500"
+                to={`/course-progress/${ele?.course?._id}`}
+              >
                 <FaEye className="mt-[6px]" />
                 <p>view course</p>
               </NavLink>

@@ -289,7 +289,7 @@ const Curriculum = ({ courseID, singleCourse }) => {
     mutate: cancelCourseCreationProcess,
     isLoading: cancelCourseLoading,
   } = useMutation({
-    mutationFn: async () => {
+    mutationFn: async ({ courseID }) => {
       try {
         const res = await fetch(`/api/course/delete-course/${courseID}`, {
           method: "DELETE",
@@ -312,7 +312,10 @@ const Curriculum = ({ courseID, singleCourse }) => {
 
   const handleCourseCancel = (e) => {
     e.preventDefault();
-    cancelCourseCreationProcess({});
+    console.log(courseID);
+    if (singleCourse) {
+      cancelCourseCreationProcess({ courseID });
+    }
   };
 
   // handleBulkUpload
@@ -456,14 +459,17 @@ const Curriculum = ({ courseID, singleCourse }) => {
               onChange={handleBulkUpload}
               hidden
             />
-            <Button
-              onClick={handleCourseCancel}
-              className={
-                "sm:w-[100px] bg-red-700 hover:bg-red-600 duration-300 w-[100%]"
-              }
-            >
-              {cancelCourseLoading ? "Canceling..." : "Cancel Course"}
-            </Button>
+
+            {singleCourse?._id && (
+              <Button
+                onClick={handleCourseCancel}
+                className={
+                  "sm:w-[100px] bg-red-700 hover:bg-red-600 duration-300 w-[100%]"
+                }
+              >
+                {cancelCourseLoading ? "Canceling..." : "Cancel Course"}
+              </Button>
+            )}
           </div>
         </div>
 

@@ -139,7 +139,9 @@ const updateCourseController = async (req, res) => {
     //update course
     await courseModel.findByIdAndUpdate(id, { ...req.body }, { new: true });
 
-    return res.status(200).json({ msg: "Course Updated" });
+    return res
+      .status(200)
+      .json({ msg: "Course Updated", courseId: findCourse?._id });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ msg: "Something went wrong" });

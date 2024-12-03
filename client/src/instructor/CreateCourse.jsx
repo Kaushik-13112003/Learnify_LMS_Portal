@@ -2,7 +2,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import React, { useState } from "react";
 import Introduction from "./courses/Introduction";
 import Curriculum from "./courses/Curriculum";
-import Settings from "./courses/Settings";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 

@@ -69,7 +69,7 @@ const Navbar = () => {
                     : "./profile.jpg"
                 }
                 alt="User Avatar"
-                className="w-10 h-10 border border-gray-200  rounded-full cursor-pointer"
+                className="w-10 h-10 border border-gray-400  rounded-full cursor-pointer"
                 onClick={toggleDropdown}
               />
 
@@ -181,7 +181,7 @@ const Navbar = () => {
                     : "./profile.jpg"
                 }
                 alt="User Avatar"
-                className="w-10 border border-gray-200  h-10 rounded-full cursor-pointer"
+                className="w-10 border border-gray-400  h-10 rounded-full cursor-pointer"
                 onClick={toggleDropdown}
               />
 

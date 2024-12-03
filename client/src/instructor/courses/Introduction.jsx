@@ -58,7 +58,7 @@ const Introduction = ({ setCourseID, handleActiveTab, singleCourse }) => {
     }
   };
 
-  //creaete-course
+  //create-course
   const { mutate, isLoading } = useMutation({
     mutationFn: async () => {
       try {

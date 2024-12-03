@@ -24,6 +24,7 @@ import CoursesCreated from "./instructor/CoursesCreated";
 import StudentCourses from "./students/StudentCourses";
 import PaymentReturn from "./pages/PaymentReturn";
 import PaymentCancel from "./pages/PaymentCancel";
+import CourseProgress from "./students/CourseProgress";
 
 const App = () => {
   const navigate = useNavigate();
@@ -128,6 +129,13 @@ const App = () => {
           path="/update-profile"
           element={
             authenticatedUser ? <UpdateProfile /> : <Navigate to="/auth" />
+          }
+        ></Route>
+
+        <Route
+          path="/course-progress/:id"
+          element={
+            authenticatedUser ? <CourseProgress /> : <Navigate to="/auth" />
           }
         ></Route>
 

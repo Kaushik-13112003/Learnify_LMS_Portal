@@ -65,14 +65,14 @@ const UpdateProfile = () => {
   }, []);
 
   return (
-    <div className="container mx-auto mt-10 p-6 max-w-md mb-10">
-      <form className="bg-white shadow-md rounded-lg p-6 text-center flex flex-col gap-4">
+    <div className="container  mx-auto mt-10 p-6 max-w-md mb-10">
+      <form className="bg-white  shadow-lg rounded-lg p-6 text-center flex flex-col gap-4">
         <h2 className="text-2xl font-bold mb-4">Update Profile</h2>
         <div className="flex flex-col items-center justify-center">
           <img
             src={image ? image : "./profile.jpg"}
             alt="Profile"
-            className="w-32 h-32 mx-auto border border-gray-200 rounded-full object-cover mb-4"
+            className="w-32 h-32 mx-auto border border-gray-400 rounded-full object-cover mb-4"
           />
           <label htmlFor="image">
             <div className="flex w-[200px] rounded-md text-white items-center justify-center  gap-3 bg-blue-600 p-2 cursor-pointer  hover:bg-blue-500 duration-500">

@@ -32,19 +32,19 @@ const Dashboard = () => {
             Students Enrolled
           </h2>
           <p className="text-2xl font-bold text-purple-900 mt-2">
-            {/* {instructorAllCourses?.reduce((acc, course) => {
+            {instructorAllCourses?.reduce((acc, course) => {
               return acc + course?.students?.length;
-            }, 0)}{" "} */}
+            }, 0)}{" "}
           </p>
         </div>
         <div className="p-6 bg-green-100 rounded-lg text-center shadow-md">
           <h2 className="text-xl font-medium text-green-800">Total Earnings</h2>
           <p className="text-2xl font-bold text-green-900 mt-2">
             $
-            {/* {instructorAllCourses &&
+            {instructorAllCourses &&
               instructorAllCourses?.reduce((acc, course) => {
                 return acc + course?.students?.length * course?.pricing;
-              }, 0)}{" "} */}
+              }, 0)}{" "}
           </p>
         </div>
       </div>

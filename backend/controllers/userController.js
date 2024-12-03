@@ -158,7 +158,8 @@ const getMyCoursesController = async (req, res) => {
     //find current user all courses
     const allCourses = await purchaseModel
       .find({ purchasedBy: id })
-      .populate("course");
+      .populate("course")
+      .sort({ createdAt: -1 });
 
     if (allCourses) {
       return res.status(200).json({ allCourses: allCourses });

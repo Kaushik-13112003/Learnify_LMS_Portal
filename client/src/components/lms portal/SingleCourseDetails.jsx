@@ -95,8 +95,14 @@ const SingleCourseDetails = () => {
 
         const dataFromResponse = await res.json();
         if (res.ok) {
-          navigate("/my-courses");
-          toast.success(dataFromResponse?.msg);
+          // navigate("/my-courses");
+          sessionStorage.setItem("courseId", JSON.stringify(singleCourse?._id));
+          sessionStorage.setItem(
+            "purchaseId",
+            JSON.stringify(dataFromResponse?.purchaseId)
+          );
+
+          window.location.href = dataFromResponse?.approveURL;
         } else {
           toast.error(dataFromResponse?.msg);
         }

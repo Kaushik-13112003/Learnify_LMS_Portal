@@ -1,6 +1,5 @@
 const paypal = require("paypal-rest-sdk");
 const purchaseModel = require("../models/purchaseModel");
-const studentCoursesModel = require("../models/studentCoursesModel");
 const courseModel = require("../models/courseModel");
 const userModel = require("../models/userModel");
 
@@ -141,40 +140,21 @@ const makePurchaseController = async (req, res) => {
         const createNewPurchase = new purchaseModel({
           purchasedBy,
           instructor,
-          paymentId: paymentInfo?._id,
+          paymentId: paymentInfo?.id,
           course: courseId,
         });
 
         await createNewPurchase.save();
 
-        //find student update my_courses
-        const findStudent = await userModel.findById(purchasedBy);
-
-        if (!findStudent) {
-          return res.status(404).json({ msg: "student not found" });
-        }
-
-        if (!findStudent.my_courses.includes(courseId)) {
-          await userModel.findByIdAndUpdate(purchasedBy, {
-            $push: {
-              my_courses: courseId,
-            },
-          });
-        } else {
-          return res.status(400).json({
-            msg: "course already purchased",
-          });
-        }
-
         //approve url
-        // const approveURL = paymentInfo.links.find(
-        //   (link) => link.rel === "approval_url"
-        // ).href;
+        const approveURL = paymentInfo.links.find(
+          (link) => link.rel === "approval_url"
+        ).href;
 
         return res.status(200).json({
-          msg: "payment successfull",
-          // approveURL: approveURL,
-          // purchaseId: createNewPurchase._id,
+          // msg: "payment successfull",
+          approveURL: approveURL,
+          purchaseId: createNewPurchase._id,
         });
       }
     });
@@ -183,76 +163,79 @@ const makePurchaseController = async (req, res) => {
   }
 };
 
-const capturePurchaseController = async (req, res) => {
+const getPaymentController = async (req, res) => {
+  const { purchasedBy, id, paymentId, payerId, purchaseId } = req.body;
+
   try {
-    const { id, paymentId, payerId } = req.body;
+    const execute_payment_json = {
+      payer_id: payerId,
+    };
 
-    //find whether payment exist or not
-    const findPayment = await purchaseModel.findById(id);
+    const purchase = await purchaseModel.findById(purchaseId);
 
-    if (!findPayment) {
-      return res.status(404).json({ msg: "payment not found" });
+    if (!purchase) {
+      return res.status(404).json({ msg: "Purchase not found" });
     }
 
-    await purchaseModel.findByIdAndUpdate(id, {
-      payment_status: "Paid",
-      purchase_status: "Confirmed",
-      payerId: payerId,
-      paymentId: paymentId,
-    });
+    //find student update my_courses
+    const findStudent = await userModel.findById(purchasedBy);
+    const findCourse = await courseModel.findById(id);
 
-    //now update students in particular course
-    const studentCourses = await studentCoursesModel.findOne({
-      studentId: findPayment.studentId,
-    });
-
-    if (studentCourses) {
-      studentCourses.courses.push({
-        courseId: findPayment.courseId,
-        title: findPayment.courseTitle,
-        instructorId: findPayment.instructorId,
-        instructorName: findPayment.instructorName,
-        dateOfPurchase: findPayment.purchase_date,
-        courseImage: findPayment.courseImage,
-        coursePrice: findPayment.coursePrice,
-      });
-
-      await studentCourses.save();
-    } else {
-      await studentCoursesModel.create({
-        studentId: findPayment.studentId,
-        courses: [
-          {
-            courseId: findPayment.courseId,
-            title: findPayment.courseTitle,
-            instructorId: findPayment.instructorId,
-            instructorName: findPayment.instructorName,
-            dateOfPurchase: findPayment.purchase_date,
-            courseImage: findPayment.courseImage,
-            coursePrice: findPayment.coursePrice,
-          },
-        ],
-      });
+    if (!findStudent) {
+      return res.status(404).json({ msg: "student not found" });
     }
 
-    //update students in course model
-    await courseModel.findByIdAndUpdate(findPayment.courseId, {
-      $addToSet: {
-        students: {
-          studentId: findPayment.studentId,
-          studentName: findPayment.studentName,
-          studentEmail: findPayment.studentEmail,
-          paidAmount: findPayment.coursePrice,
+    if (!findCourse) {
+      return res.status(404).json({ msg: "student not found" });
+    }
+
+    if (!findStudent.my_courses.includes(id)) {
+      await userModel.findByIdAndUpdate(purchasedBy, {
+        $push: {
+          my_courses: id,
         },
-      },
-    });
+      });
 
-    return res
-      .status(200)
-      .json({ msg: "payment confirmed", paymentData: findPayment });
-  } catch (err) {
-    console.log(err);
+      await courseModel.findByIdAndUpdate(id, {
+        $push: {
+          students: {
+            studentId: findStudent._id,
+            studentName: findStudent.name,
+            studentEmail: findStudent.email,
+            paidAmount: findCourse.pricing,
+          },
+        },
+      });
+    } else {
+      return res.status(400).json({
+        msg: "course already purchased",
+      });
+    }
+
+    // Capture the payment
+    paypal.payment.execute(
+      paymentId,
+      execute_payment_json,
+      async (err, payment) => {
+        if (err) {
+          purchase.payment_status = "Failed"; // or whatever your status is
+          purchase.paymentId = paymentId; // save the paymentId if needed
+          await purchase.save();
+          console.error(err);
+          return res.status(500).json({ msg: "Payment execution failed" });
+        } else {
+          purchase.payment_status = "Completed"; // or whatever your status is
+          purchase.paymentId = paymentId; // save the paymentId if needed
+          await purchase.save();
+
+          return res.status(200).json({ msg: "Payment successful" });
+        }
+      }
+    );
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "Something went wrong" });
   }
 };
 
-module.exports = { makePurchaseController, capturePurchaseController };
+module.exports = { makePurchaseController, getPaymentController };

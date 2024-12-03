@@ -19,7 +19,7 @@ const Profile = () => {
             authenticatedUser.image ? authenticatedUser.image : "./profile.jpg"
           }
           alt="User Avatar"
-          className="w-32 border border-gray-200  h-32 mx-auto rounded-full object-cover mb-4"
+          className="w-32 border border-gray-400  h-32 mx-auto rounded-full object-cover mb-4"
         />
         <h2 className="text-2xl font-bold mb-2">{authenticatedUser.name}</h2>
         <p className="text-gray-600 mb-4">{authenticatedUser.email}</p>

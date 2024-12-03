@@ -97,7 +97,11 @@ const CourseDisplay = ({ courses, type }) => {
                     className="w-32 h-32 border object-cover rounded-lg"
                   />
                   <NavLink
-                    to={`/single-course/${course?._id}`}
+                    to={`${
+                      authenticatedUser?.my_courses?.includes(course?._id)
+                        ? `/course-progress/${course?._id}`
+                        : `/single-course/${course?._id}`
+                    }`}
                     className="flex cursor-pointer gap-2 items-center  hover:text-blue-400 duration-500 "
                   >
                     <p>see more</p>

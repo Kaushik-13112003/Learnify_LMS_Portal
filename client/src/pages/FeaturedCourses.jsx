@@ -24,6 +24,10 @@ const FeaturedCourses = () => {
     },
   });
 
+  if (isLoading) {
+    return <div className="text-center mt-7">Loading...</div>;
+  }
+
   return (
     <>
       <section id="courses" className="bg-gray-100 py-10 mb-10">
@@ -32,7 +36,7 @@ const FeaturedCourses = () => {
             Featured Courses
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {allCourses.map((course, i) => (
+            {allCourses?.slice(0, 6)?.map((course, i) => (
               <div
                 key={i}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition mt-2"
