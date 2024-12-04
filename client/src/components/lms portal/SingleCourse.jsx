@@ -24,8 +24,8 @@ const SingleCourse = () => {
     let updatedCourses = allCourses;
 
     if (selectedCategories.length > 0) {
-      updatedCourses = updatedCourses.filter((course) => {
-        return selectedCategories?.includes(course.category);
+      updatedCourses = updatedCourses?.filter((course) => {
+        return selectedCategories?.includes(course?.category);
       });
     }
 

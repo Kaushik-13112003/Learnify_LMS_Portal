@@ -25,6 +25,8 @@ import StudentCourses from "./students/StudentCourses";
 import PaymentReturn from "./pages/PaymentReturn";
 import PaymentCancel from "./pages/PaymentCancel";
 import CourseProgress from "./students/CourseProgress";
+import Bookmarks from "./pages/Bookmarks";
+import Favourites from "./students/Favourites";
 
 const App = () => {
   const navigate = useNavigate();
@@ -137,6 +139,16 @@ const App = () => {
           element={
             authenticatedUser ? <CourseProgress /> : <Navigate to="/auth" />
           }
+        ></Route>
+
+        <Route
+          path="/my-bookmarks"
+          element={authenticatedUser ? <Bookmarks /> : <Navigate to="/auth" />}
+        ></Route>
+
+        <Route
+          path="/my-favourites"
+          element={authenticatedUser ? <Favourites /> : <Navigate to="/auth" />}
         ></Route>
 
         <Route

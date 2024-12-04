@@ -5,6 +5,9 @@ const {
   forgotPasswordController,
   resetPasswordController,
   getMyCoursesController,
+  bookmarkCoursesController,
+  getMybookmarkedCoursesController,
+  getMyLikedCoursesController,
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -20,5 +23,18 @@ router.post("/reset-password/:token", protectedRoute, resetPasswordController);
 
 //my-courses
 router.get("/my-courses/:id", protectedRoute, getMyCoursesController);
+
+//bookmark-courses
+router.post("/bookmark-course/:id", protectedRoute, bookmarkCoursesController);
+
+//bookmark-courses
+router.get(
+  "/my-bookmarked-course",
+  protectedRoute,
+  getMybookmarkedCoursesController
+);
+
+//liked-courses
+router.get("/my-liked-course", protectedRoute, getMyLikedCoursesController);
 
 module.exports = router;

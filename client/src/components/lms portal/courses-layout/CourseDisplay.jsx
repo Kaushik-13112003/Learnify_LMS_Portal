@@ -1,14 +1,19 @@
 import useCourseUnpublish from "@/instructor/courses/useCourseUnpublish";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowBigRight } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { CiCircleRemove } from "react-icons/ci";
 import { FaEdit } from "react-icons/fa";
 import { TiTick } from "react-icons/ti";
 import { NavLink } from "react-router-dom";
+import { CiBookmark } from "react-icons/ci";
+import { FaBookmark } from "react-icons/fa";
+import toast from "react-hot-toast";
+import useBookmark from "@/students/useBookmark";
 
 const CourseDisplay = ({ courses, type }) => {
   const [allCourses, setAllCourses] = useState([]);
+  const queryClient = useQueryClient();
   const { data: authenticatedUser } = useQuery({ queryKey: ["authUser"] });
 
   const handleCourseUnpublish = useCourseUnpublish();
@@ -34,6 +39,9 @@ const CourseDisplay = ({ courses, type }) => {
 
     setAllCourses(sortedCoursesByPrice);
   };
+
+  //handle-bookmark
+  const handleBookmark = useBookmark();
 
   useEffect(() => {
     setAllCourses(courses);
@@ -132,7 +140,7 @@ const CourseDisplay = ({ courses, type }) => {
                 </div>
 
                 <div className=" absolute right-4 top-4 flex gap-4 items-center">
-                  {course?.courseCreater === authenticatedUser?._id && (
+                  {course?.courseCreater === authenticatedUser?._id ? (
                     <>
                       <NavLink to={`/update-course/${course?._id}`}>
                         <FaEdit
@@ -155,6 +163,18 @@ const CourseDisplay = ({ courses, type }) => {
                         />
                       )}
                     </>
+                  ) : authenticatedUser?.bookmarks?.includes(course?._id) ? (
+                    <FaBookmark
+                      onClick={() => handleBookmark(course?._id)}
+                      className="hover:cursor-pointer duration-500 hover:text-blue-700"
+                      size={20}
+                    />
+                  ) : (
+                    <CiBookmark
+                      onClick={() => handleBookmark(course?._id)}
+                      className="hover:cursor-pointer duration-500 hover:text-blue-700"
+                      size={20}
+                    />
                   )}
                 </div>
               </div>

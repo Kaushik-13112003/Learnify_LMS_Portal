@@ -93,13 +93,31 @@ const Navbar = () => {
                       </NavLink>
                     </>
                   ) : (
-                    <NavLink
-                      to="/my-courses"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >
-                      My Courses
-                    </NavLink>
+                    <>
+                      <NavLink
+                        to="/my-courses"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      >
+                        My Courses
+                      </NavLink>
+
+                      <NavLink
+                        to="/my-bookmarks"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      >
+                        Bookmarks
+                      </NavLink>
+
+                      <NavLink
+                        to="/my-favourites"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      >
+                        Favourites
+                      </NavLink>
+                    </>
                   )}
 
                   <NavLink
@@ -205,13 +223,31 @@ const Navbar = () => {
                       </NavLink>
                     </>
                   ) : (
-                    <NavLink
-                      to="/my-courses"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >
-                      My Courses
-                    </NavLink>
+                    <>
+                      <NavLink
+                        to="/my-courses"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      >
+                        My Courses
+                      </NavLink>
+
+                      <NavLink
+                        to="/my-bookmarks"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      >
+                        Bookmarks
+                      </NavLink>
+
+                      <NavLink
+                        to="/my-favourites"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      >
+                        Favourites
+                      </NavLink>
+                    </>
                   )}
                   <NavLink
                     to="/my-profile"
@@ -220,6 +256,7 @@ const Navbar = () => {
                   >
                     My Profile
                   </NavLink>
+
                   <NavLink
                     to="/forgot-password"
                     onClick={() => setIsDropdownOpen(false)}

@@ -7,7 +7,7 @@ const Footer = () => {
       <footer className="bg-blue-600 text-white py-6">
         <div className="container mx-auto px-6 text-center">
           <p className="text-md sm:text-lg">
-            © 2024 LMS Portal. All rights reserved.
+            © 2024 Learnify. All rights reserved.
           </p>
           <div className="flex justify-center mt-4 space-x-4 sm:space-x-6">
             <NavLink

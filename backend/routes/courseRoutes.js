@@ -12,6 +12,9 @@ const {
   cancelCourseController,
   unpublishCourseController,
   bulkUploadController,
+  commentOnCourseController,
+  getAllCourseCommentController,
+  likeCourseController,
 } = require("../controllers/courseControllers");
 const router = express.Router();
 const protectedRoute = require("../middleware/protectedRoute");
@@ -58,5 +61,11 @@ router.post("/unpublish-course/:id", protectedRoute, unpublishCourseController);
 
 //bulk-upload
 router.post("/bulk-upload", upload.array("files", 5), bulkUploadController);
+
+//add-comment
+router.post("/add-comment/:id", protectedRoute, commentOnCourseController);
+
+//like-course
+router.post("/like/:id", protectedRoute, likeCourseController);
 
 module.exports = router;

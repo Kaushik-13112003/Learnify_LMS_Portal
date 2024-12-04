@@ -197,10 +197,17 @@ const getSingleCourseController = async (req, res) => {
     //find course
     const findCourse = await courseModel
       .findById(id)
-      .populate("courseCreater", "-password");
+      .populate("courseCreater", "-password")
+      .populate("comments.user", "name image");
+
     if (!findCourse) {
       return res.status(404).json({ msg: "course not found" });
     }
+
+    // Sort comments by commentTime (newest first)
+    findCourse.comments.sort(
+      (a, b) => new Date(b.commentTime) - new Date(a.commentTime)
+    );
 
     return res.status(200).json({ singleCourse: findCourse });
   } catch (err) {
@@ -284,6 +291,84 @@ const unpublishCourseController = async (req, res) => {
   }
 };
 
+const commentOnCourseController = async (req, res) => {
+  try {
+    const { text } = req.body;
+    const { id } = req.params;
+
+    //find course
+    const findCourse = await courseModel.findById(id);
+
+    if (!findCourse) {
+      return res.status(404).json({ msg: "course not found" });
+    }
+
+    if (!text) {
+      return res.status(404).json({ msg: "add something to comment" });
+    }
+
+    //add comment
+    await courseModel.findByIdAndUpdate(id, {
+      $push: {
+        comments: { text, user: req.userId },
+      },
+    });
+
+    return res.status(200).json({ msg: "Comment added !!" });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ msg: "Something went wrong" });
+  }
+};
+
+const likeCourseController = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    //find course
+    const findCourse = await courseModel.findById(id);
+
+    if (!findCourse) {
+      return res.status(404).json({ msg: "course not found" });
+    }
+
+    //like
+
+    if (findCourse.likes.includes(req.userId)) {
+      await courseModel.findByIdAndUpdate(id, {
+        $pull: {
+          likes: req.userId,
+        },
+      });
+
+      await userModel.findByIdAndUpdate(req.userId, {
+        $pull: {
+          likedCourse: id,
+        },
+      });
+
+      return res.status(200).json({ msg: "Course Liked !!" });
+    } else {
+      await courseModel.findByIdAndUpdate(id, {
+        $push: {
+          likes: req.userId,
+        },
+      });
+
+      await userModel.findByIdAndUpdate(req.userId, {
+        $push: {
+          likedCourse: id,
+        },
+      });
+
+      return res.status(200).json({ msg: "Course un-Liked !!" });
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ msg: "Something went wrong" });
+  }
+};
+
 module.exports = {
   uploadMediaToCloudinary,
   deleteMediaToCloudinary,
@@ -296,4 +381,6 @@ module.exports = {
   cancelCourseController,
   unpublishCourseController,
   bulkUploadController,
+  commentOnCourseController,
+  likeCourseController,
 };

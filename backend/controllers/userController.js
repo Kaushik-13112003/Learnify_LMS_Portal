@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const { forgotPasswordMail } = require("../mailtrap/generateMail");
 const purchaseModel = require("../models/purchaseModel");
+const courseModel = require("../models/courseModel");
 
 const updateProfileController = async (req, res) => {
   try {
@@ -171,9 +172,90 @@ const getMyCoursesController = async (req, res) => {
   }
 };
 
+const bookmarkCoursesController = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const findCourse = await courseModel.findById(id);
+
+    if (!findCourse) {
+      return res.status(404).json({ msg: "course not found" });
+    }
+
+    //find current user
+    const findUser = await userModel.findById(req.userId);
+
+    if (!findUser) {
+      return res.status(404).json({ msg: "user not found" });
+    }
+
+    //update add course to bookmarks
+    if (findUser.bookmarks.includes(id)) {
+      await userModel.findByIdAndUpdate(req.userId, {
+        $pull: { bookmarks: id },
+      });
+      return res.status(200).json({ msg: "course un-bookmarked" });
+    } else {
+      await userModel.findByIdAndUpdate(req.userId, {
+        $push: { bookmarks: id },
+      });
+      return res.status(200).json({ msg: "course bookmarked" });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const getMybookmarkedCoursesController = async (req, res) => {
+  try {
+    //find current user
+    const findUser = await userModel.findById(req.userId);
+
+    if (!findUser) {
+      return res.status(404).json({ msg: "user not found" });
+    }
+
+    //find all bookmarked courses
+    const allCourses = await courseModel.find({ _id: findUser.bookmarks });
+
+    if (allCourses) {
+      return res.status(200).json({ allCourses: allCourses });
+    } else {
+      return res.status(404).json({ msg: "course not found" });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const getMyLikedCoursesController = async (req, res) => {
+  try {
+    //find current user
+    const findUser = await userModel.findById(req.userId);
+
+    if (!findUser) {
+      return res.status(404).json({ msg: "user not found" });
+    }
+
+    //find all liked courses
+    const allCourses = await courseModel.find({ _id: findUser.likedCourse });
+
+    if (allCourses) {
+      return res.status(200).json({ allCourses: allCourses });
+    } else {
+      return res.status(404).json({ msg: "course not found" });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 module.exports = {
   updateProfileController,
   forgotPasswordController,
   resetPasswordController,
   getMyCoursesController,
+  bookmarkCoursesController,
+  getMybookmarkedCoursesController,
+  getMyLikedCoursesController,
 };

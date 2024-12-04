@@ -1,9 +1,9 @@
 // CourseDetail.js
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { GrLanguage } from "react-icons/gr";
-import { FaLock, FaPlayCircle } from "react-icons/fa";
+import { FaHeart, FaLock, FaPlayCircle, FaRegHeart } from "react-icons/fa";
 import ReactPlayer from "react-player";
 import {
   Dialog,
@@ -13,67 +13,21 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import toast from "react-hot-toast";
+import useLikeUnlike from "@/students/useLikeUnlike";
 
 const SingleCourseDetails = () => {
   const { id } = useParams(); // Get course ID from URL
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: authenticatedUser } = useQuery({ queryKey: ["authUser"] });
 
   // State to manage dialog and selected video
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
-  const [approveURL, setApproveURL] = useState("");
+  const [commentText, setCommentText] = useState("");
+  const [activeCourseId, setActiveCourseId] = useState(null);
 
-  //make payment to purchase course
-  // const { mutate: handlePayment, isLoading: isPaymentLoading } = useMutation({
-  //   mutationFn: async ({}) => {
-  //     try {
-  //       const res = await fetch(`/api/payment/make-payment`, {
-  //         method: "POST",
-
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-
-  //         body: JSON.stringify({
-  //           studentId:
-  //             authenticatedUser?.role !== "instructor" &&
-  //             authenticatedUser?._id,
-  //           studentName: authenticatedUser?.name,
-  //           studentEmail: authenticatedUser?.email,
-  //           instructorId: singleCourse?.courseCreater?._id,
-  //           instructorName: singleCourse?.courseCreater?.name,
-  //           courseId: singleCourse?._id,
-  //           payment_status: "Initiated",
-  //           payment_method: "paypal",
-  //           purchase_status: "Pending",
-  //           purchase_date: new Date(),
-  //           paymentId: "",
-  //           payerId: "",
-  //           coursePrice: singleCourse?.pricing,
-  //           courseTitle: singleCourse?.title,
-  //           courseImage: singleCourse?.image,
-  //         }),
-  //       });
-
-  //       const dataFromResponse = await res.json();
-  //       if (res.ok) {
-  //         // navigate("/instructor-dashboard");
-  //         sessionStorage.setItem(
-  //           "currentOrderId",
-  //           JSON.stringify(dataFromResponse?.purchaseId)
-  //         );
-  //         setApproveURL(dataFromResponse?.approveURL);
-  //         toast.success(dataFromResponse?.msg);
-  //       } else {
-  //         toast.error("something went wrong");
-  //       }
-  //     } catch (err) {
-  //       console.log(err);
-  //     }
-  //   },
-  // });
-
+  //makr payment
   const { mutate: handlePayment, isLoading: isPaymentLoading } = useMutation({
     mutationFn: async ({}) => {
       try {
@@ -139,13 +93,53 @@ const SingleCourseDetails = () => {
     },
   });
 
-  if (isLoading) {
-    return <div className="text-center mt-7">Loading...</div>;
-  }
+  //open comment model
+  const openCommentsModal = (id) => {
+    setActiveCourseId(id);
+    document.getElementById("comments_modal" + id).showModal();
+  };
 
-  // if (approveURL !== "") {
-  //   window.location.href = approveURL;
-  // }
+  //close the model
+  const closeCommentsModal = (id) => {
+    setActiveCourseId(null);
+    document.getElementById("comments_modal" + id).close();
+  };
+
+  // handleComment
+  const { mutate: commentOnPost } = useMutation({
+    mutationFn: async ({ id, commentText }) => {
+      try {
+        let res = await fetch(`/api/course/add-comment/${id}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text: commentText }),
+        });
+
+        let dataFromResponse = await res.json();
+        if (res.ok) {
+          toast.success(dataFromResponse?.msg);
+          queryClient.invalidateQueries({ queryKey: ["singleCourse"] });
+          // queryClient.invalidateQueries({ queryKey: ["getComments"] });
+        } else {
+          toast.error(dataFromResponse?.msg);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    },
+  });
+
+  const handleComment = async (id) => {
+    if (commentText.trim()) {
+      commentOnPost({ id, commentText });
+      setCommentText(""); // Reset the comment input after submitting
+      document.getElementById("comments_modal" + id).close(); // Close the modal after adding the comment
+    } else {
+      toast.error("Comment cannot be empty");
+    }
+  };
 
   // handleLectureClick
   const handleLectureClick = (video) => {
@@ -153,8 +147,14 @@ const SingleCourseDetails = () => {
     setDialogOpen(true);
   };
 
+  const handleLikeUnlikeCourse = useLikeUnlike();
+
+  if (isLoading) {
+    return <div className="text-center mt-7">Loading...</div>;
+  }
+
   return (
-    <div className="mb-10 flex flex-col justify-center items-center">
+    <div className="relative mb-10 flex flex-col justify-center items-center">
       {/* Full-width image header */}
 
       <div
@@ -163,6 +163,20 @@ const SingleCourseDetails = () => {
           backgroundImage: `url(${singleCourse?.banner})`,
         }}
       ></div>
+
+      {authenticatedUser?.likedCourse?.includes(singleCourse?._id) ? (
+        <FaHeart
+          onClick={() => handleLikeUnlikeCourse(singleCourse?._id)}
+          className=" absolute right-4 top-4 hover:cursor-pointer hover:duration-500 text-red-700 "
+          size={30}
+        />
+      ) : (
+        <FaRegHeart
+          onClick={() => handleLikeUnlikeCourse(singleCourse?._id)}
+          className=" absolute right-4 top-4 hover:cursor-pointer duration-500 hover:text-red-700 "
+          size={30}
+        />
+      )}
 
       <div className="flex sm:w-[90vw]    justify-between  sm:flex-row flex-col gap-8 p-10">
         <div className="">
@@ -262,31 +276,132 @@ const SingleCourseDetails = () => {
 
         <div className="">
           <div className=" flex items-center gap-2">
-            <button
-              className={` p-2 rounded-sm  duration-500 text-white w-[100px]
-                 ${
-                   authenticatedUser?.my_courses?.includes(singleCourse?._id)
-                     ? "bg-slate-500 cursor-not-allowed"
-                     : "bg-blue-700 hover:bg-blue-500"
-                 }  `}
-              onClick={buyNowController}
-              disabled={authenticatedUser?.my_courses?.includes(
-                singleCourse?._id
-              )}
-            >
-              {authenticatedUser?.my_courses?.includes(singleCourse?._id)
-                ? "Purchased"
-                : isPaymentLoading
-                ? "Processing..."
-                : "Buy Now"}
-            </button>
-            <p>at</p>
-            <span className="font-semibold text-blue-600 text-2xl">
+            {authenticatedUser?._id !== singleCourse?.courseCreater?._id && (
+              <>
+                <button
+                  className={` p-2 rounded-sm  duration-500 text-white w-[100px]
+                  ${
+                    authenticatedUser?.my_courses?.includes(singleCourse?._id)
+                      ? "bg-slate-500 cursor-not-allowed"
+                      : "bg-blue-700 hover:bg-blue-500"
+                  }  `}
+                  onClick={buyNowController}
+                  disabled={authenticatedUser?.my_courses?.includes(
+                    singleCourse?._id
+                  )}
+                >
+                  {authenticatedUser?.my_courses?.includes(singleCourse?._id)
+                    ? "Purchased"
+                    : isPaymentLoading
+                    ? "Processing..."
+                    : "Buy Now"}
+                </button>
+                <p>at</p>
+              </>
+            )}
+            <span className="font-semibold text-blue-600 text-3xl">
               ${singleCourse?.pricing}
             </span>
           </div>
         </div>
       </div>
+
+      {/* add comments */}
+      <button
+        className={` p-2 rounded-sm bg-blue-700 hover:bg-blue-500  duration-500 text-white
+                  `}
+        onClick={() => openCommentsModal(singleCourse?._id)}
+      >
+        Add Comment
+      </button>
+
+      {/* Modal for comments */}
+      <dialog
+        id={`comments_modal${singleCourse?._id}`}
+        className="modal modal-bottom  rounded-md w-[50%] sm:modal-middle p-4"
+      >
+        <div className="modal-box border border-white">
+          <h3 className="font-bold text-lg mb-3">COMMENTS</h3>
+
+          <div className="modal-action flex flex-col gap-4">
+            <form
+              method="dialog"
+              className="w-[100%]"
+              onSubmit={(e) => e.preventDefault()}
+            >
+              <div className="form-control">
+                <textarea
+                  type="text"
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder="Share your opinion"
+                  className="border border-black p-2 rounded-md h-[100px] w-[100%]"
+                />
+              </div>
+              <div className="flex mb-4 items-center gap-4 mt-5">
+                <button
+                  className=" p-2 rounded-sm bg-blue-700 hover:bg-blue-500  duration-500 text-white w-[100px]"
+                  type="button"
+                  onClick={() => handleComment(singleCourse?._id)}
+                >
+                  Add
+                </button>
+                <button
+                  className=" p-2 rounded-sm bg-red-700 hover:bg-red-500  duration-500 text-white w-[100px]"
+                  type="button"
+                  onClick={() => closeCommentsModal(singleCourse?._id)}
+                >
+                  Close
+                </button>
+              </div>
+            </form>
+
+            {/* all comments */}
+
+            <div className=" h-[100px] overflow-auto">
+              {/* {allComments?.comments?.length <= 0 && (
+                <p>be the first to add comment !!</p>
+              )} */}
+            </div>
+          </div>
+
+          {/* all comments */}
+          <div className=" h-[100px] overflow-auto -mt-[100px]">
+            {singleCourse?.comments?.length <= 0 && (
+              <p>be the first to add comment !!</p>
+            )}
+
+            {singleCourse?.comments?.length > 0 && (
+              <div
+                className="flex gap-3 flex-col "
+                // onClick={() => navigate(`/profile/${ele?.username}`)}
+              >
+                {singleCourse?.comments?.map((com) => {
+                  return (
+                    <div className=" flex gap-5 items-center">
+                      <img
+                        src={com?.user?.image || "/profile.jpg"}
+                        width={30}
+                        className="rounded-full"
+                        alt="Profile"
+                      />
+                      <div>
+                        <div className="flex text-[10px] items-center gap-3">
+                          <p className="text-blue-600 text-[14px]">
+                            {com?.user?.name}
+                          </p>
+                          <p>{new Date(com?.commentTime).toLocaleString()}</p>
+                        </div>
+                        <h1 className="text-[15px]">{com?.text}</h1>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </dialog>
     </div>
   );
 };

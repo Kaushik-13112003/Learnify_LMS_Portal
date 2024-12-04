@@ -83,7 +83,28 @@ const courseSchema = new mongoose.Schema(
     isPublished: {
       type: Boolean,
     },
+
+    comments: [
+      {
+        text: {
+          type: String,
+          require: true,
+        },
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "user",
+          require: true,
+        },
+        commentTime: {
+          type: Date,
+          default: Date.now(),
+        },
+      },
+    ],
+
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
   },
+
   { timestamps: true }
 );
 

@@ -35,6 +35,22 @@ const userSchema = new mongoose.Schema(
       default: [],
     },
 
+    bookmarks: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "course",
+        default: [],
+      },
+    ],
+
+    likedCourse: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "course",
+        default: [],
+      },
+    ],
+
     passwordResetLinkToken: { type: String },
 
     passworResetdExpiredAt: Date,
